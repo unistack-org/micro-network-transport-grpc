@@ -4,13 +4,12 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
+	"fmt"
 	"net"
 
 	pb "github.com/unistack-org/micro-network-transport-grpc/proto"
 	"github.com/unistack-org/micro/v3/network/transport"
-	maddr "github.com/unistack-org/micro/v3/util/addr"
 	mnet "github.com/unistack-org/micro/v3/util/net"
-	mls "github.com/unistack-org/micro/v3/util/tls"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
@@ -25,27 +24,6 @@ type grpcTransportListener struct {
 	tls      *tls.Config
 }
 
-func getTLSConfig(addr string) (*tls.Config, error) {
-	hosts := []string{addr}
-
-	// check if its a valid host:port
-	if host, _, err := net.SplitHostPort(addr); err == nil {
-		if len(host) == 0 {
-			hosts = maddr.IPs()
-		} else {
-			hosts = []string{host}
-		}
-	}
-
-	// generate a certificate
-	cert, err := mls.Certificate(hosts...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &tls.Config{Certificates: []tls.Certificate{cert}}, nil
-}
-
 func (t *grpcTransportListener) Addr() string {
 	return t.listener.Addr().String()
 }
@@ -58,18 +36,10 @@ func (t *grpcTransportListener) Accept(fn func(transport.Socket)) error {
 	var opts []grpc.ServerOption
 
 	// setup tls if specified
-	if t.secure || t.tls != nil {
-		config := t.tls
-		if config == nil {
-			var err error
-			addr := t.listener.Addr().String()
-			config, err = getTLSConfig(addr)
-			if err != nil {
-				return err
-			}
-		}
-
-		creds := credentials.NewTLS(config)
+	if t.secure && t.tls == nil {
+		return fmt.Errorf("request secure communication but *tls.Config is nil")
+	} else if t.secure {
+		creds := credentials.NewTLS(t.tls)
 		opts = append(opts, grpc.Creds(creds))
 	}
 

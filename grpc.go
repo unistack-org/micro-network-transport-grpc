@@ -38,7 +38,7 @@ func (t *grpcTransportListener) Accept(fn func(transport.Socket)) error {
 	// setup tls if specified
 	if t.secure && t.tls == nil {
 		return fmt.Errorf("request secure communication but *tls.Config is nil")
-	} else if t.secure {
+	} else if t.secure && t.tls != nil {
 		creds := credentials.NewTLS(t.tls)
 		opts = append(opts, grpc.Creds(creds))
 	}

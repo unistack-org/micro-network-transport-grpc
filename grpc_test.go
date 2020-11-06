@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"net"
 	"testing"
 
@@ -21,20 +22,20 @@ func expectedPort(t *testing.T, expected string, lsn transport.Listener) {
 
 func TestGRPCTransportPortRange(t *testing.T) {
 	tp := NewTransport()
-
-	lsn1, err := tp.Listen(":44444-44448")
+	ctx := context.TODO()
+	lsn1, err := tp.Listen(ctx, ":44444-44448")
 	if err != nil {
 		t.Errorf("Did not expect an error, got %s", err)
 	}
 	expectedPort(t, "44444", lsn1)
 
-	lsn2, err := tp.Listen(":44444-44448")
+	lsn2, err := tp.Listen(ctx, ":44444-44448")
 	if err != nil {
 		t.Errorf("Did not expect an error, got %s", err)
 	}
 	expectedPort(t, "44445", lsn2)
 
-	lsn, err := tp.Listen(":0")
+	lsn, err := tp.Listen(ctx, ":0")
 	if err != nil {
 		t.Errorf("Did not expect an error, got %s", err)
 	}
@@ -46,8 +47,8 @@ func TestGRPCTransportPortRange(t *testing.T) {
 
 func TestGRPCTransportCommunication(t *testing.T) {
 	tr := NewTransport()
-
-	l, err := tr.Listen(":0")
+	ctx := context.Background()
+	l, err := tr.Listen(ctx, ":0")
 	if err != nil {
 		t.Errorf("Unexpected listen err: %v", err)
 	}
@@ -80,9 +81,9 @@ func TestGRPCTransportCommunication(t *testing.T) {
 		}
 	}()
 
-	c, err := tr.Dial(l.Addr())
+	c, err := tr.Dial(ctx, l.Addr())
 	if err != nil {
-		t.Errorf("Unexpected dial err: %v", err)
+		t.Fatalf("Unexpected dial err: %v", err)
 	}
 	defer c.Close()
 

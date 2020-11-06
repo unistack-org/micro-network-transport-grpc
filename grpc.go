@@ -22,6 +22,7 @@ type grpcTransportListener struct {
 	listener net.Listener
 	secure   bool
 	tls      *tls.Config
+	opts     transport.ListenOptions
 }
 
 func (t *grpcTransportListener) Addr() string {
@@ -53,14 +54,8 @@ func (t *grpcTransportListener) Accept(fn func(transport.Socket)) error {
 	return srv.Serve(t.listener)
 }
 
-func (t *grpcTransport) Dial(addr string, opts ...transport.DialOption) (transport.Client, error) {
-	dopts := transport.DialOptions{
-		Timeout: transport.DefaultDialTimeout,
-	}
-
-	for _, opt := range opts {
-		opt(&dopts)
-	}
+func (t *grpcTransport) Dial(ctx context.Context, addr string, opts ...transport.DialOption) (transport.Client, error) {
+	dopts := transport.NewDialOptions(opts...)
 
 	options := []grpc.DialOption{}
 
@@ -78,7 +73,7 @@ func (t *grpcTransport) Dial(addr string, opts ...transport.DialOption) (transpo
 	}
 
 	// dial the server
-	ctx, cancel := context.WithTimeout(context.Background(), dopts.Timeout)
+	ctx, cancel := context.WithTimeout(ctx, dopts.Timeout)
 	defer cancel()
 	conn, err := grpc.DialContext(ctx, addr, options...)
 	if err != nil {
@@ -100,11 +95,8 @@ func (t *grpcTransport) Dial(addr string, opts ...transport.DialOption) (transpo
 	}, nil
 }
 
-func (t *grpcTransport) Listen(addr string, opts ...transport.ListenOption) (transport.Listener, error) {
-	var options transport.ListenOptions
-	for _, o := range opts {
-		o(&options)
-	}
+func (t *grpcTransport) Listen(ctx context.Context, addr string, opts ...transport.ListenOption) (transport.Listener, error) {
+	options := transport.NewListenOptions(opts...)
 
 	ln, err := mnet.Listen(addr, func(addr string) (net.Listener, error) {
 		return net.Listen("tcp", addr)
@@ -117,6 +109,7 @@ func (t *grpcTransport) Listen(addr string, opts ...transport.ListenOption) (tra
 		listener: ln,
 		tls:      t.opts.TLSConfig,
 		secure:   t.opts.Secure,
+		opts:     options,
 	}, nil
 }
 

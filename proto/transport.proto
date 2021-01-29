@@ -1,6 +1,7 @@
 syntax = "proto3";
 
-package go.micro.transport.grpc;
+package transport;
+option go_package = "github.com/unistack-org/micro-transport-grpc;transport";
 
 service Transport {
 	rpc Stream(stream Message) returns (stream Message) {}

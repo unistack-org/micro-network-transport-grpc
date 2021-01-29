@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 
-	pb "github.com/unistack-org/micro-network-transport-grpc/proto"
+	pb "github.com/unistack-org/micro-network-transport-grpc/v3/proto"
 	"github.com/unistack-org/micro/v3/network/transport"
 	mnet "github.com/unistack-org/micro/v3/util/net"
 	"google.golang.org/grpc"

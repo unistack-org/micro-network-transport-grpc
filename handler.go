@@ -3,7 +3,7 @@ package grpc
 import (
 	"runtime/debug"
 
-	pb "github.com/unistack-org/micro-network-transport-grpc/proto"
+	pb "github.com/unistack-org/micro-network-transport-grpc/v3/proto"
 	"github.com/unistack-org/micro/v3/errors"
 	"github.com/unistack-org/micro/v3/logger"
 	"github.com/unistack-org/micro/v3/network/transport"
@@ -31,8 +31,8 @@ func (m *microTransport) Stream(ts pb.Transport_StreamServer) (err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			logger.Error("panic recovered: ", r)
-			logger.Error(string(debug.Stack()))
+			logger.Error(ts.Context(), "panic recovered: ", r)
+			logger.Error(ts.Context(), string(debug.Stack()))
 			sock.Close()
 			err = errors.InternalServerError("go.micro.transport", "panic recovered: %v", r)
 		}

@@ -4,7 +4,6 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
-	"fmt"
 	"net"
 
 	pb "github.com/unistack-org/micro-network-transport-grpc/v3/proto"
@@ -20,7 +19,6 @@ type grpcTransport struct {
 
 type grpcTransportListener struct {
 	listener net.Listener
-	secure   bool
 	tls      *tls.Config
 	opts     transport.ListenOptions
 }
@@ -37,9 +35,7 @@ func (t *grpcTransportListener) Accept(fn func(transport.Socket)) error {
 	var opts []grpc.ServerOption
 
 	// setup tls if specified
-	if t.secure && t.tls == nil {
-		return fmt.Errorf("request secure communication but *tls.Config is nil")
-	} else if t.secure && t.tls != nil {
+	if t.tls != nil {
 		creds := credentials.NewTLS(t.tls)
 		opts = append(opts, grpc.Creds(creds))
 	}
@@ -59,14 +55,8 @@ func (t *grpcTransport) Dial(ctx context.Context, addr string, opts ...transport
 
 	options := []grpc.DialOption{}
 
-	if t.opts.Secure || t.opts.TLSConfig != nil {
-		config := t.opts.TLSConfig
-		if config == nil {
-			config = &tls.Config{
-				InsecureSkipVerify: true,
-			}
-		}
-		creds := credentials.NewTLS(config)
+	if t.opts.TLSConfig != nil {
+		creds := credentials.NewTLS(t.opts.TLSConfig)
 		options = append(options, grpc.WithTransportCredentials(creds))
 	} else {
 		options = append(options, grpc.WithInsecure())
@@ -108,7 +98,6 @@ func (t *grpcTransport) Listen(ctx context.Context, addr string, opts ...transpo
 	return &grpcTransportListener{
 		listener: ln,
 		tls:      t.opts.TLSConfig,
-		secure:   t.opts.Secure,
 		opts:     options,
 	}, nil
 }

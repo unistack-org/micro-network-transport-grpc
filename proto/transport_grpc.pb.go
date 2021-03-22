@@ -11,7 +11,8 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-const _ = grpc.SupportPackageIsVersion6
+// Requires gRPC-Go v1.32.0 or later.
+const _ = grpc.SupportPackageIsVersion7
 
 // TransportClient is the client API for Transport service.
 //
@@ -29,7 +30,7 @@ func NewTransportClient(cc grpc.ClientConnInterface) TransportClient {
 }
 
 func (c *transportClient) Stream(ctx context.Context, opts ...grpc.CallOption) (Transport_StreamClient, error) {
-	stream, err := c.cc.NewStream(ctx, &_Transport_serviceDesc.Streams[0], "/transport.Transport/Stream", opts...)
+	stream, err := c.cc.NewStream(ctx, &Transport_ServiceDesc.Streams[0], "/transport.Transport/Stream", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -71,13 +72,20 @@ type TransportServer interface {
 type UnimplementedTransportServer struct {
 }
 
-func (*UnimplementedTransportServer) Stream(Transport_StreamServer) error {
+func (UnimplementedTransportServer) Stream(Transport_StreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method Stream not implemented")
 }
-func (*UnimplementedTransportServer) mustEmbedUnimplementedTransportServer() {}
+func (UnimplementedTransportServer) mustEmbedUnimplementedTransportServer() {}
 
-func RegisterTransportServer(s *grpc.Server, srv TransportServer) {
-	s.RegisterService(&_Transport_serviceDesc, srv)
+// UnsafeTransportServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TransportServer will
+// result in compilation errors.
+type UnsafeTransportServer interface {
+	mustEmbedUnimplementedTransportServer()
+}
+
+func RegisterTransportServer(s grpc.ServiceRegistrar, srv TransportServer) {
+	s.RegisterService(&Transport_ServiceDesc, srv)
 }
 
 func _Transport_Stream_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -106,7 +114,10 @@ func (x *transportStreamServer) Recv() (*Message, error) {
 	return m, nil
 }
 
-var _Transport_serviceDesc = grpc.ServiceDesc{
+// Transport_ServiceDesc is the grpc.ServiceDesc for Transport service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var Transport_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "transport.Transport",
 	HandlerType: (*TransportServer)(nil),
 	Methods:     []grpc.MethodDesc{},

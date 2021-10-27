@@ -1,14 +1,14 @@
 // Package grpc provides a grpc transport
-package grpc
+package grpc // import "go.unistack.org/micro-network-transport-grpc/v3"
 
 import (
 	"context"
 	"crypto/tls"
 	"net"
 
-	pb "github.com/unistack-org/micro-network-transport-grpc/v3/proto"
-	"github.com/unistack-org/micro/v3/network/transport"
-	mnet "github.com/unistack-org/micro/v3/util/net"
+	pb "go.unistack.org/micro-network-transport-grpc/v3/proto"
+	"go.unistack.org/micro/v3/network/transport"
+	mnet "go.unistack.org/micro/v3/util/net"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )

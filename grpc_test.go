@@ -5,7 +5,7 @@ import (
 	"net"
 	"testing"
 
-	"github.com/unistack-org/micro/v3/network/transport"
+	"go.unistack.org/micro/v3/network/transport"
 )
 
 func expectedPort(t *testing.T, expected string, lsn transport.Listener) {
